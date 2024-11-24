@@ -24,7 +24,7 @@ class Ant:
             self.has_food = False
             self.nest.stock += 1
             self.color = white
-            # self.angle = -self.velocity.Heading()
+            print(f"Ant returned to nest. Stock: {self.nest.stock}")
             return
         self.velocity += self.scavenger.Seek(self.position, self.nest.position, self.velocity, self.max_speed)
         # add some randomness to have some more realistic movement
@@ -33,6 +33,7 @@ class Ant:
         pher_direction = self.velocity.Negate()
 
         pheromone.AppendPheromone(self.position, pher_direction ,"food")
+        print(f"Ant at {self.position} is returning to nest and depositing 'food' pheromone.")
 
     def SearchForFood(self, closest_food, pheromone):
         dist = Vector.GetDistance(self.position, closest_food.position)
@@ -45,6 +46,7 @@ class Ant:
             self.FollowPheromoneOrWander(pheromone)
 
         pheromone.AppendPheromone(self.position, self.velocity, "home")
+        print(f"Ant at {self.position} is searching for food and depositing 'home' pheromone.")
 
     def UpdateVelocity(self, closest_food, pheromone):
         if self.has_food == True:
@@ -67,6 +69,7 @@ class Ant:
         pheromone_direction = pheromone_direction.Scale(self.max_speed)
         self.velocity = pheromone_direction
         self.velocity += self.scavenger.Wander(self.velocity)
+        # Optionally, ensure pheromones are being appended here if needed
         # pheromone.AppendPheromone(self.position, self.velocity, "home")
 
     def Update(self, foods, pheromones, dt):

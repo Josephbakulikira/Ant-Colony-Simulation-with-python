@@ -10,7 +10,7 @@ def main():
     fps = 30
     
     # Pre-create surfaces
-    pheromone_layer = pygame.Surface(resolution, pygame.SRCALPHA)
+    pheromone_layer = pygame.Surface(resolution, pygame.SRCALPHA, 32)  # Ensure 32-bit for alpha
     background = pygame.Surface(resolution)
     
     colony = Colony()
@@ -44,13 +44,13 @@ def main():
         if not pause:
             # Clear layers
             background.fill(black)
-            pheromone_layer.fill((0,0,0,0))
+            # pheromone_layer.fill((0,0,0,0))  # Ensure this line remains commented out
             
             colony.Update(pheromone_layer, show_pheromone_food, show_pheromone_home, delta_time)
             
             # Composite layers
             screen.blit(background, (0,0))
-            screen.blit(pheromone_layer, (0,0))
+            screen.blit(pheromone_layer, (0,0), special_flags=pygame.BLEND_ADD)  # Ensure additive blending
             colony.Show(screen)
             
             pygame.display.flip()

@@ -92,16 +92,15 @@ class Vector:
         mag = self.Magnitude()
         if mag == 0:
             return Vector()
-        return Vector(*(self.vec * (l/mag)))
+        return Vector(*(self.vec * (l / mag)))
         
     def Average(vecs):
         if len(vecs) == 0:
             return Vector()
-        avg = Vector(vecs[0].x, vecs[0].y)
-        for i in range(1, len(vecs)):
-            avg = avg + vecs[i]
-
-        avg = avg / len(vecs)
+        sum_vec = Vector()
+        for vec in vecs:
+            sum_vec += vec
+        avg = sum_vec.Scale(len(vecs))  # Corrected averaging
         return avg
 
     def Negate(self):

@@ -27,17 +27,19 @@ class Pheromone:
         elif self.type == 'home':
             self.strength -= self.home_evaporation_rate
 
+        self.strength = max(self.strength, 0)
+
     def Combine(self, other):
-        # merge a solution of two pheromones close to each other
-        if type(other) != Pheromone:
-            print("Error")
+        if not isinstance(other, Pheromone):
+            print("Error: Can only combine with another Pheromone.")
+            return
         average_position = Vector.Average([self.position, other.position])
         average_direction = Vector.Average([self.direction, other.direction])
 
         new_strength = min(self.strength + other.strength, self.max_strength)
 
         self.position = average_position
-        self.direction = average_position
+        self.direction = average_direction
         self.strength = new_strength
 
     def Show(self, screen, showFoodTrail, showHomeTrail):
@@ -50,7 +52,8 @@ class Pheromone:
                 r, g, b = (234, 52, 80)
                 surface = pygame.Surface((self.radius*2, self.radius*2), pygame.SRCALPHA, 32)
                 pygame.draw.circle(surface, (r, g, b, alpha), (self.radius, self.radius), self.radius)
-                screen.blit(surface, (self.position-self.radius).xy())
+                # Use additive blending to prevent blinking
+                screen.blit(surface, (self.position - self.radius).xy(), special_flags=pygame.BLEND_ADD)
         if showHomeTrail:
             if self.type == "home":
                 # alpha = int(translateValue(self.strength, 0, 100, 0, 4))
@@ -60,7 +63,8 @@ class Pheromone:
                 r, g, b = (125, 55, 252)
                 surface = pygame.Surface((self.radius*2, self.radius*2), pygame.SRCALPHA, 32)
                 pygame.draw.circle(surface, (r, g, b, alpha), (self.radius, self.radius), self.radius)
-                screen.blit(surface, (self.position-self.radius).xy())
+                # Use additive blending to prevent blinking
+                screen.blit(surface, (self.position - self.radius).xy(), special_flags=pygame.BLEND_ADD)
 
 class PheromoneMap:
     def __init__(self):
@@ -68,8 +72,8 @@ class PheromoneMap:
         self.food_grid = defaultdict(list)
         self.home_grid = defaultdict(list)
         self.active_cells = set()  # Track only cells with pheromones
-        self.pheromone_dispersion = pheromone_step
-        self.radius = 2
+        self.pheromone_dispersion = PHEROMONE_MERGE_DISTANCE  # Changed from pheromone_step to PHEROMONE_MERGE_DISTANCE
+        self.radius = 4  # Increased from 2 to 4 for better visibility
 
     def _get_cell(self, pos):
         return (int(pos.x / self.cell_size), int(pos.y / self.cell_size))
@@ -82,6 +86,7 @@ class PheromoneMap:
                 yield (center_cell[0] + dx, center_cell[1] + dy)
 
     def AppendPheromone(self, position, direction, pher_type="food"):
+        print(f"Appending pheromone: Type={pher_type}, Position={position}, Direction={direction}")
         cell = self._get_cell(position)
         grid = self.food_grid if pher_type.lower() == "food" else self.home_grid
         self.active_cells.add(cell)
@@ -91,11 +96,13 @@ class PheromoneMap:
             for p in grid[check_cell]:
                 if Vector.WithinRange(p.position, position, self.pheromone_dispersion):
                     p.Combine(Pheromone(position, direction, pher_type))
+                    print(f"Combined pheromone at {position} with existing pheromone.")
                     return
                         
         # Add new pheromone if no merge
         new_pher = Pheromone(position, direction, pher_type)
         grid[cell].append(new_pher)
+        print(f"Created new pheromone: {new_pher}")
 
     def PheromoneDirection(self, position, range_offset, pher_type="food"):
         pher_directions = []
@@ -135,3 +142,4 @@ class PheromoneMap:
         
         # Remove empty cells
         self.active_cells -= dead_cells
+
