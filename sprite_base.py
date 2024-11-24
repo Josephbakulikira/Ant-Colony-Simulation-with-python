@@ -1,4 +1,6 @@
 import arcade
+import PIL.Image
+import PIL.ImageDraw
 from vector import Vector
 
 class VectorSprite(arcade.Sprite):
@@ -15,3 +17,24 @@ class VectorSprite(arcade.Sprite):
         self.vector_pos = new_pos
         self.center_x = new_pos.x
         self.center_y = new_pos.y
+
+    @staticmethod
+    def create_triangular_texture(size, color):
+        # Convert arcade color to RGBA
+        if isinstance(color, (tuple, list)):
+            rgba_color = color if len(color) == 4 else (*color, 255)
+        else:
+            rgba_color = (255, 255, 255, 255)  # Default white
+            
+        image = PIL.Image.new('RGBA', (int(size), int(size)), (0, 0, 0, 0))
+        draw = PIL.ImageDraw.Draw(image)
+        points = [(size/2, 0), (0, size), (size, size)]
+        draw.polygon(points, fill=rgba_color)
+        return arcade.Texture(f"triangle_{size}", image)
+
+    @staticmethod
+    def create_circular_texture(size, color):
+        image = PIL.Image.new('RGBA', (int(size), int(size)), (0, 0, 0, 0))
+        draw = PIL.ImageDraw.Draw(image)
+        draw.ellipse([0, 0, size, size], fill=color)
+        return arcade.Texture(f"circle_{size}", image)

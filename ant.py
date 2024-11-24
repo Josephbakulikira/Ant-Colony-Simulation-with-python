@@ -1,16 +1,17 @@
-from sprite_base import VectorSprite
-from vector import Vector  # Add this import
-from config import *
-import arcade
 import math
 import random
-from arcade_utils import create_triangular_texture
+
+from config import *
+from sprite_base import VectorSprite
+from vector import Vector  # Add this import
+
 
 class AntSprite(VectorSprite):
     def __init__(self, position, nest):
         super().__init__()
         
         self.width = self.height = ANT_SIZE
+        self.color = ANT_COLOR  # Set color before texture creation
         self._create_ant_texture()
         self.position = position
         
@@ -44,8 +45,8 @@ class AntSprite(VectorSprite):
         
     def _create_ant_texture(self):
         texture_size = max(self.width, self.height)
-        image = create_triangular_texture(texture_size, ANT_COLOR)
-        self.texture = image
+        # Use self.create_triangular_texture from VectorSprite base class
+        self.texture = self.create_triangular_texture(texture_size, self.color)
         self.set_hit_box([(-self.width/2, -self.height/2),
                          (0, self.height/2),
                          (self.width/2, -self.height/2)])
