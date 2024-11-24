@@ -5,7 +5,7 @@ from vector import Vector
 
 screen_offset = 30
 pygame.font.init()
-text_color = (white)
+text_color = WHITE
 
 class Food:
     def __init__(self, position):
@@ -39,7 +39,7 @@ class FoodMap:
         self.foods = self.InitializeFood()
 
     def InitializeFood(self):
-        return [ Food(Vector(randint(screen_offset, width-screen_offset), randint(screen_offset, height-screen_offset))) for _ in range(self.size)]
+        return [ Food(Vector(randint(screen_offset, WIDTH - screen_offset), randint(screen_offset, HEIGHT - screen_offset))) for _ in range(self.size)]
 
     def Update(self):
         for f in self.foods:

@@ -82,12 +82,12 @@ class Ant:
         # initialize triangle point
         # rotate point based on the angle
         triangle = [
-            ( self.position + Vector(ant_size//2, 0).Rotate(self.angle) ).xy(),
-            ( self.position - Vector(ant_size//2, - ant_size/3).Rotate(self.angle) ).xy(),
-            ( self.position - Vector(ant_size//2, + ant_size/3).Rotate(self.angle) ).xy()
+            ( self.position + Vector(ANT_SIZE//2, 0).Rotate(self.angle) ).xy(),
+            ( self.position - Vector(ANT_SIZE//2, - ANT_SIZE/3).Rotate(self.angle) ).xy(),
+            ( self.position - Vector(ANT_SIZE//2, + ANT_SIZE/3).Rotate(self.angle) ).xy()
         ]
         if self.has_food:
-            pygame.draw.circle(screen, (220, 130 , 30), (self.position + Vector(ant_size/1.5, 0).Rotate(self.angle)).xy(), 2 )
+            pygame.draw.circle(screen, FOOD_COLOR, (self.position + Vector(ANT_SIZE/1.5, 0).Rotate(self.angle)).xy(), 2 )
 
         pygame.draw.polygon(screen, self.color, triangle)
 

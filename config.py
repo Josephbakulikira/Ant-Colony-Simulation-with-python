@@ -1,25 +1,23 @@
-width = 800
-height = 800
-resolution = (width, height)
+WIDTH = 800
+HEIGHT = 800
+RESOLUTION = (WIDTH, HEIGHT)
 
 # Renamed constants
 ANT_COUNT = 10
 FOOD_STOCK_COUNT = 3
 
-pheromone_step = 1
-
 # Adjust evaporation rates for smoother fading
-evo_home_rate = 0.05  # Reduced from 0.8
-evo_food_rate = 0.02  # Reduced from 0.1
+EVO_HOME_RATE = 0.05  # Reduced from 0.8
+EVO_FOOD_RATE = 0.02  # Reduced from 0.1
 
-white = (255, 255, 255)
-black = (0, 0, 0)
-red = (255, 0, 0)
-blue = (0, 0, 255)
-green = (0, 255, 0)
-yellow = (255, 255, 0)
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
+RED = (255, 0, 0)
+BLUE = (0, 0, 255)
+GREEN = (0, 255, 0)
+YELLOW = (255, 255, 0)
 
-ant_size = 10
+ANT_SIZE = 10
 
 # Performance parameters
 GRID_CELL_SIZE = 50
@@ -36,12 +34,13 @@ ANT_COLOR = (255, 255, 255)
 
 # New constants
 NEST_RADIUS = 45
-NEST_COLOR = blue
+NEST_COLOR = BLUE
 
 FOOD_INITIAL_STOCK = 25
 FOOD_COLOR = (220, 130, 30)
 FOOD_BITE_SIZE = 1
 
 # Remove or comment out the lowercase constants
+# pheromone_step = 1
 # ant_count = 10
 # food_stock_count = 3

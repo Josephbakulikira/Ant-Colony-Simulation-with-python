@@ -5,7 +5,7 @@ from config import *
 from ant import Ant
 
 pygame.font.init()
-text_color = (white)
+text_color = WHITE
 text_font = pygame.font.SysFont("Arial", 35)
 
 class Nest:
@@ -26,12 +26,12 @@ class Nest:
             # boundary wrapping
             pos = ant.position
             if pos.x < 0:
-                ant.position = Vector(width, pos.y)
-            elif pos.x > width:
+                ant.position = Vector(WIDTH, pos.y)  # Changed 'width' to 'WIDTH'
+            elif pos.x > WIDTH:
                 ant.position = Vector(0, pos.y)
             if pos.y < 0:
-                ant.position = Vector(pos.x, height)
-            elif pos.y > height:
+                ant.position = Vector(pos.x, HEIGHT)  # Changed 'height' to 'HEIGHT'
+            elif pos.y > HEIGHT:
                 ant.position = Vector(pos.x, 0)
 
     def Show(self, screen, show_stock=True):

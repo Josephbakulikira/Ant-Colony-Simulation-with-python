@@ -5,13 +5,13 @@ from colony import Colony
 
 def main():
     pygame.display.init()
-    screen = pygame.display.set_mode(resolution)
+    screen = pygame.display.set_mode(RESOLUTION)
     clock = pygame.time.Clock()
     fps = 30
     
     # Pre-create surfaces
-    pheromone_layer = pygame.Surface(resolution, pygame.SRCALPHA, 32)  # Ensure 32-bit for alpha
-    background = pygame.Surface(resolution)
+    pheromone_layer = pygame.Surface(RESOLUTION, pygame.SRCALPHA, 32)  # Ensure 32-bit for alpha
+    background = pygame.Surface(RESOLUTION)
     
     colony = Colony()
     show_pheromone_food = True
@@ -19,7 +19,7 @@ def main():
     pause = False
     
     # Visible area tracking
-    view_rect = pygame.Rect(0, 0, width, height)
+    view_rect = pygame.Rect(0, 0, WIDTH, HEIGHT)
     
     running = True
     while running:
@@ -43,7 +43,7 @@ def main():
 
         if not pause:
             # Clear layers
-            background.fill(black)
+            background.fill(BLACK)  # Changed from black to BLACK
             # pheromone_layer.fill((0,0,0,0))  # Ensure this line remains commented out
             
             colony.Update(pheromone_layer, show_pheromone_food, show_pheromone_home, delta_time)

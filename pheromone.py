@@ -14,9 +14,9 @@ class Pheromone:
         self.direction = direction
         self.strength = PHEROMONE_INITIAL_STRENGTH
         self.max_strength = 100
-        self.evaporation_rate = evo_food_rate
-        self.home_evaporation_rate = evo_home_rate
-        self.color = green
+        self.evaporation_rate = EVO_FOOD_RATE
+        self.home_evaporation_rate = EVO_HOME_RATE
+        self.color = GREEN
         self.type = type
         self.radius = 2
 
