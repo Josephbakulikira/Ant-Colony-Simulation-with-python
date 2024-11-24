@@ -13,6 +13,7 @@ class FoodSprite(VectorSprite):
         self.stock = FOOD_INITIAL_STOCK
         self.bite_size = FOOD_BITE_SIZE
         self.color = FOOD_COLOR
+        self.min_size = 5  # Add minimum size
         self._create_food_texture()
         
     @property
@@ -20,25 +21,27 @@ class FoodSprite(VectorSprite):
         return self.vector_pos
         
     def _create_food_texture(self):
-        size = self.stock + 5
+        size = max(self.min_size, self.stock + 5)  # Ensure minimum size
         texture = arcade.make_circle_texture(size, self.color)
         self.texture = texture
         
     def Bite(self):
-        self.stock -= self.bite_size
+        self.stock = max(0, self.stock - self.bite_size)  # Prevent negative stock
         self._create_food_texture()  # Update size
         
     def draw(self):
         if self.stock > 0:
             super().draw()
+            # Make food count more visible
             arcade.draw_text(
                 str(self.stock),
                 self.center_x,
                 self.center_y,
-                arcade.color.WHITE,
-                12,
+                arcade.color.BLACK,  # Change to black for better contrast
+                16,  # Larger font size
                 anchor_x="center",
-                anchor_y="center"
+                anchor_y="center",
+                bold=True  # Make text bold
             )
 
 class FoodMap:

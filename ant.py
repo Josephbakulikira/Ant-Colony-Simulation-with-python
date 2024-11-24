@@ -10,8 +10,10 @@ class AntSprite(VectorSprite):
     def __init__(self, position, nest):
         super().__init__()
         
-        self.width = self.height = ANT_SIZE
-        self.color = ANT_COLOR  # Set color before texture creation
+        self.has_food = False  # Move this up before using it
+        self.width = self.height = ANT_SIZE * 1.5  # Reduced multiplier from 2 to 1.5
+        self.color = FOOD_COLOR if self.has_food else ANT_COLOR
+        self.alpha = 255  # Ensure full opacity
         self._create_ant_texture()
         self.position = position
         
@@ -20,7 +22,6 @@ class AntSprite(VectorSprite):
         self.scavenger = Scavenger()  # Add scavenger initialization
         self._setup_sensors()
         self.nest = nest
-        self.has_food = False
         self.isFollowingTrail = False  # Add this back
         
     def _setup_sensors(self):
@@ -45,11 +46,14 @@ class AntSprite(VectorSprite):
         
     def _create_ant_texture(self):
         texture_size = max(self.width, self.height)
-        # Use self.create_triangular_texture from VectorSprite base class
         self.texture = self.create_triangular_texture(texture_size, self.color)
-        self.set_hit_box([(-self.width/2, -self.height/2),
-                         (0, self.height/2),
-                         (self.width/2, -self.height/2)])
+        # Make hitbox slightly smaller than visual size
+        hitbox_size = texture_size * 0.8
+        self.set_hit_box([
+            (-hitbox_size/2, -hitbox_size/2),
+            (0, hitbox_size/2),
+            (hitbox_size/2, -hitbox_size/2)
+        ])
         
     def _return_to_nest(self, pheromone):
         nest_pos = self.nest.position
