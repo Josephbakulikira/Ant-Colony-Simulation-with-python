@@ -17,12 +17,13 @@ class AntSprite(VectorSprite):
         self._create_ant_texture()
         self.position = position
         
-        self.velocity = Vector()
+        self.velocity = Vector.Random()  # Start with random direction
         self.max_speed = 3
         self.scavenger = Scavenger()  # Add scavenger initialization
         self._setup_sensors()
         self.nest = nest
         self.isFollowingTrail = False  # Add this back
+        self.initial_spread = True  # Add flag for initial movement
         
     def _setup_sensors(self):
         self.trigger_radius = 10
@@ -39,6 +40,9 @@ class AntSprite(VectorSprite):
             self._return_to_nest(pheromones)
         else:
             self._search_for_food(foods.GetClosestFood(self.position), pheromones)
+        # Deposit pheromones every time
+        pheromone_type = 'food' if self.has_food else 'home'
+        pheromones.append_pheromone(self.position, self.velocity, pheromone_type)
             
     def _update_position(self):
         self.position = self.position + self.velocity.Scale(self.max_speed)
@@ -103,10 +107,10 @@ class AntSprite(VectorSprite):
 
 class Scavenger:
     def __init__(self):
-        self.wander_distance = 20
-        self.wander_radius = 10
-        self.wander_angle = 1
-        self.wander_delta_angle = math.pi/4
+        self.wander_distance = WANDER_DISTANCE
+        self.wander_radius = WANDER_RADIUS
+        self.wander_angle = WANDER_ANGLE
+        self.wander_delta_angle = WANDER_DELTA_ANGLE
 
     def Seek(self, position, target, velocity, max_speed):
         diff = target - position

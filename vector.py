@@ -6,6 +6,8 @@ from random import uniform
 import arcade
 
 class Vector:
+    __slots__ = ['vec', '_magnitude', '_heading']  # Restrict attributes for memory efficiency
+
     def __init__(self, x=0, y=0):
         self.vec = np.array([float(x), float(y)])
         self._magnitude = None  # Cache magnitude
@@ -60,6 +62,8 @@ class Vector:
         mag = self.Magnitude()
         if mag > 0:
             return Vector(*(self.vec / mag))
+        else:
+            return Vector(0, 0)  # Return a zero vector instead of None
             
     def Heading(self, toDegree=False):
         theta = atan2(self.y, self.x)
@@ -71,12 +75,14 @@ class Vector:
         return Vector(cos(angle) * mag, sin(angle) * mag )
 
     @staticmethod
-    @lru_cache(maxsize=1024)
+    @lru_cache(maxsize=2048)  # Increase cache size
     def GetDistance(a, b):
         return np.sqrt(np.sum((a.vec - b.vec) ** 2))
 
-    def GetDistanceSQ(a, b):
-        return pow(b.x - a.x, 2) + pow(b.y - a.y, 2)
+    def GetDistanceSQ(a, b):  # Faster than GetDistance for comparisons
+        dx = b.x - a.x
+        dy = b.y - a.y
+        return dx * dx + dy * dy  # Avoid pow() function call
 
     def WithinRange(a, b, dist):
         # Quick AABB check first

@@ -2,6 +2,7 @@ import arcade
 import PIL.Image
 import PIL.ImageDraw
 from vector import Vector
+from config import *  # Import config for any constants needed
 
 class VectorSprite(arcade.Sprite):
     def __init__(self, texture=None):

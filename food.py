@@ -13,7 +13,7 @@ class FoodSprite(VectorSprite):
         self.stock = FOOD_INITIAL_STOCK
         self.bite_size = FOOD_BITE_SIZE
         self.color = FOOD_COLOR
-        self.min_size = 5  # Add minimum size
+        self.min_size = FOOD_MIN_SIZE  # Use constant from config.py
         self._create_food_texture()
         
     @property
@@ -48,8 +48,14 @@ class FoodMap:
     def __init__(self, food_stock):
         self.size = food_stock
         self.foods = arcade.SpriteList()
+        self._spatial_hash = {}  # Add spatial hashing
+        self._cell_size = 50
         self.InitializeFood()
 
+    def _get_cell(self, position):
+        return (int(position.x / self._cell_size), 
+                int(position.y / self._cell_size))
+                
     def InitializeFood(self):
         screen_offset = 30
         for _ in range(self.size):
@@ -59,6 +65,10 @@ class FoodMap:
             )
             food = FoodSprite(pos)
             self.foods.append(food)
+            cell = self._get_cell(food.position)
+            if cell not in self._spatial_hash:
+                self._spatial_hash[cell] = []
+            self._spatial_hash[cell].append(food)
 
     def Update(self):
         for food in self.foods[:]:  # Create a copy of list for safe iteration
@@ -69,15 +79,25 @@ class FoodMap:
         if not self.foods:  # Handle empty food list
             return None
             
-        closest_food = self.foods[0]
-        closest_distance = Vector.GetDistanceSQ(position, closest_food.position)
+        cell = self._get_cell(position)
+        search_cells = [
+            (cell[0] + dx, cell[1] + dy)
+            for dx, dy in [(0,0), (-1,0), (1,0), (0,-1), (0,1)]
+        ]
         
-        for food in self.foods[1:]:
-            temp_distance = Vector.GetDistanceSQ(position, food.position)
-            if temp_distance < closest_distance:
-                closest_food = food
-                closest_distance = temp_distance
-                
+        closest_food = None
+        closest_distance = float('inf')
+        
+        for cell in search_cells:
+            if cell in self._spatial_hash:
+                for food in self._spatial_hash[cell]:
+                    if food.stock <= 0:
+                        continue
+                    dist = Vector.GetDistanceSQ(position, food.position)
+                    if dist < closest_distance:
+                        closest_food = food
+                        closest_distance = dist
+                        
         return closest_food
 
     def draw(self):

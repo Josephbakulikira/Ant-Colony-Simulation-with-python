@@ -10,18 +10,24 @@ class Colony:
         self.nest = NestSprite(center_pos, ANT_COUNT)
         self.food = FoodMap(FOOD_STOCK_COUNT)
         self.pheromone = PheromoneSystem()
+        self._frame_counter = 0
 
     def update(self, delta_time, showFoodTrail, showHomeTrail):
+        self._frame_counter += 1
+        
         self.nest.Update(self.food, self.pheromone, delta_time)
         self.food.Update()
-        self.pheromone.update()
+        
+        if self._frame_counter % PHEROMONE_UPDATE_RATE == 0:
+            self.pheromone.update()
+            self._frame_counter = 0
 
     def draw(self):
         self.food.draw()
-        self.pheromone.draw()
         self.nest.draw()
+        self.pheromone.draw()  # Draw pheromones after the nest
+        self.nest.ants.draw()  # Draw ants on top of pheromones
         self.draw_stats()
-        self.nest.ants.draw()  # Make sure ants are drawn last
         
     def draw_stats(self):
         stats = [
