@@ -1,3 +1,5 @@
+from functools import lru_cache
+
 import numpy as np
 from math import atan2, cos, sin, sqrt, pi
 from random import uniform
@@ -74,23 +76,23 @@ class Vector:
         mag = self.Magnitude()
         return Vector(cos(angle) * mag, sin(angle) * mag )
 
+    @staticmethod
+    @lru_cache(maxsize=1024)
     def GetDistance(a, b):
-        return sqrt( pow(b.x - a.x, 2) + pow(b.y - a.y, 2) )
+        return np.sqrt(np.sum((a.vec - b.vec) ** 2))
 
     def GetDistanceSQ(a, b):
         return pow(b.x - a.x, 2) + pow(b.y - a.y, 2)
 
     def WithinRange(a, b, dist):
-        if abs(a.x - b.x) > dist:
+        # Quick AABB check first
+        if abs(a.x - b.x) > dist or abs(a.y - b.y) > dist:
             return False
-        if abs(a.y - b.y) > dist:
-            return False
-        squared_dist = dist * dist
-        return  True if Vector.GetDistanceSQ(a, b) <= squared_dist else False
+        return np.sum((a.vec - b.vec) ** 2) <= dist * dist
 
     def Scale(self, l):
         mag = self.Magnitude()
-        if mag == 0:
+        if mag < 0.0001:  # Avoid division by very small numbers
             return Vector()
         return Vector(*(self.vec * (l / mag)))
         

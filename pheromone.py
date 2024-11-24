@@ -29,9 +29,26 @@ class PheromoneSystem:
     def __init__(self):
         self.food_particles = arcade.SpriteList(use_spatial_hash=True)
         self.home_particles = arcade.SpriteList(use_spatial_hash=True)
+        self.grid_size = GRID_CELL_SIZE
+        self.grid = {}  # Spatial hash grid
+        
+    def _get_grid_pos(self, pos):
+        return (int(pos.x / self.grid_size), int(pos.y / self.grid_size))
         
     def append_pheromone(self, position, direction, pher_type="food"):
+        grid_pos = self._get_grid_pos(position)
+        if grid_pos in self.grid:
+            # Merge with existing pheromones if too close
+            for p in self.grid[grid_pos]:
+                if Vector.GetDistance(position, p.position) < PHEROMONE_MERGE_DISTANCE:
+                    p.strength = min(100, p.strength + 20)
+                    return
+                    
         particle = PheromoneParticle(position, direction, pher_type)
+        if grid_pos not in self.grid:
+            self.grid[grid_pos] = []
+        self.grid[grid_pos].append(particle)
+        
         if pher_type == "food":
             self.food_particles.append(particle)
         else:
@@ -53,13 +70,18 @@ class PheromoneSystem:
             
     def PheromoneDirection(self, position, range_offset, pher_type="food"):
         """Get average direction from nearby pheromones."""
+        grid_pos = self._get_grid_pos(position)
         pher_directions = []
         particles = self.food_particles if pher_type.lower() == "food" else self.home_particles
         
-        # Check nearby pheromones
-        for particle in particles:
-            if Vector.WithinRange(position, particle.position, range_offset):
-                pher_directions.append(particle.direction)
-                    
+        # Only check neighboring cells
+        for dx in [-1, 0, 1]:
+            for dy in [-1, 0, 1]:
+                check_pos = (grid_pos[0] + dx, grid_pos[1] + dy)
+                if check_pos in self.grid:
+                    for particle in self.grid[check_pos]:
+                        if Vector.WithinRange(position, particle.position, range_offset):
+                            pher_directions.append(particle.direction)
+                            
         return Vector.Average(pher_directions) if pher_directions else Vector()
 

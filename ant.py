@@ -32,6 +32,9 @@ class AntSprite(arcade.Sprite):
         self.center_x = position.x
         self.center_y = position.y
         
+        self._cached_smell_radius_sq = self.smell_radius ** 2
+        self._cached_trigger_radius_sq = self.trigger_radius ** 2
+        
     @property
     def position(self):
         return self.vector_pos
@@ -80,10 +83,14 @@ class AntSprite(arcade.Sprite):
         pheromone.append_pheromone(self.position, pher_direction, "food")
 
     def SearchForFood(self, closest_food, pheromone):
-        dist = Vector.GetDistance(self.position, closest_food.position)
-        if dist < self.trigger_radius:
+        if not closest_food:
+            self.FollowPheromoneOrWander(pheromone)
+            return
+            
+        dist_sq = Vector.GetDistanceSQ(self.position, closest_food.position)
+        if dist_sq < self._cached_trigger_radius_sq:
             self.TakeFood(closest_food)
-        elif dist < self.smell_radius:
+        elif dist_sq < self._cached_smell_radius_sq:
             self.Step(closest_food, pheromone)
         else:
             self.FollowPheromoneOrWander(pheromone)
