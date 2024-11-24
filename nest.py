@@ -2,6 +2,7 @@ import arcade
 from vector import Vector
 from config import *
 from ant import AntSprite
+from sprite_base import VectorSprite
 
 class NestSprite(arcade.SpriteSolidColor):
     def __init__(self, position, n_ants=ANT_COUNT):

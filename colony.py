@@ -1,8 +1,8 @@
 from config import *
-from vector import Vector
 from nest import NestSprite
-from pheromone import PheromoneSystem
 from food import FoodMap
+from pheromone import PheromoneSystem
+from vector import Vector
 
 class Colony:
     def __init__(self):

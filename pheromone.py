@@ -32,10 +32,12 @@ class PheromoneParticle(VectorSprite):
 
 class PheromoneSystem:
     def __init__(self):
-        self.particles = {"food": arcade.SpriteList(use_spatial_hash=True),
-                         "home": arcade.SpriteList(use_spatial_hash=True)}
+        self.particles = {
+            "food": arcade.SpriteList(use_spatial_hash=True),
+            "home": arcade.SpriteList(use_spatial_hash=True)
+        }
         self.grid = {}
-        self.grid_size = GRID_CELL_SIZE  # Add this initialization
+        self.grid_size = GRID_CELL_SIZE
         
     def append_pheromone(self, position, direction, type="food"):
         if self._should_merge(position, type):

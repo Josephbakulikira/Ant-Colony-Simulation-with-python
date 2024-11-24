@@ -2,8 +2,9 @@ import arcade
 from config import *
 from random import randint
 from vector import Vector
+from sprite_base import VectorSprite
 
-class FoodSprite(arcade.Sprite):
+class FoodSprite(VectorSprite):
     def __init__(self, position):
         super().__init__()
         self.vector_pos = position  # Store Vector for calculations
