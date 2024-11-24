@@ -119,3 +119,5 @@ class Vector:
     def _reset_cache(self):
         self._magnitude = None
         self._heading = None
+
+# Ensure any new constants are moved to config.py

@@ -15,7 +15,7 @@ class Ant:
         self.nest = nest
         # angle in radiant
         self.angle = -self.velocity.Heading()
-        self.color = white
+        self.color = ANT_COLOR
         self.has_food = False
         self.isFollowingTrail = False
 
@@ -23,8 +23,7 @@ class Ant:
         if Vector.WithinRange(self.position, self.nest.position, self.nest.radius):
             self.has_food = False
             self.nest.stock += 1
-            self.color = white
-            print(f"Ant returned to nest. Stock: {self.nest.stock}")
+            self.color = ANT_COLOR
             return
         self.velocity += self.scavenger.Seek(self.position, self.nest.position, self.velocity, self.max_speed)
         # add some randomness to have some more realistic movement
@@ -33,7 +32,6 @@ class Ant:
         pher_direction = self.velocity.Negate()
 
         pheromone.AppendPheromone(self.position, pher_direction ,"food")
-        print(f"Ant at {self.position} is returning to nest and depositing 'food' pheromone.")
 
     def SearchForFood(self, closest_food, pheromone):
         dist = Vector.GetDistance(self.position, closest_food.position)
@@ -46,7 +44,6 @@ class Ant:
             self.FollowPheromoneOrWander(pheromone)
 
         pheromone.AppendPheromone(self.position, self.velocity, "home")
-        print(f"Ant at {self.position} is searching for food and depositing 'home' pheromone.")
 
     def UpdateVelocity(self, closest_food, pheromone):
         if self.has_food == True:
@@ -58,7 +55,7 @@ class Ant:
     def TakeFood(self, closest_food):
         self.has_food = True
         self.isFollowingTrail = False
-        self.color = (220, 130 , 30)
+        self.color = FOOD_COLOR
         closest_food.Bite()
 
     def Step(self, closest_food, pheromone):

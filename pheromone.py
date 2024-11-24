@@ -12,7 +12,7 @@ class Pheromone:
     def __init__(self, position, direction, type="Food"):
         self.position = position
         self.direction = direction
-        self.strength = 100
+        self.strength = PHEROMONE_INITIAL_STRENGTH
         self.max_strength = 100
         self.evaporation_rate = evo_food_rate
         self.home_evaporation_rate = evo_home_rate
@@ -31,7 +31,6 @@ class Pheromone:
 
     def Combine(self, other):
         if not isinstance(other, Pheromone):
-            print("Error: Can only combine with another Pheromone.")
             return
         average_position = Vector.Average([self.position, other.position])
         average_direction = Vector.Average([self.direction, other.direction])
@@ -86,7 +85,6 @@ class PheromoneMap:
                 yield (center_cell[0] + dx, center_cell[1] + dy)
 
     def AppendPheromone(self, position, direction, pher_type="food"):
-        print(f"Appending pheromone: Type={pher_type}, Position={position}, Direction={direction}")
         cell = self._get_cell(position)
         grid = self.food_grid if pher_type.lower() == "food" else self.home_grid
         self.active_cells.add(cell)
@@ -96,13 +94,11 @@ class PheromoneMap:
             for p in grid[check_cell]:
                 if Vector.WithinRange(p.position, position, self.pheromone_dispersion):
                     p.Combine(Pheromone(position, direction, pher_type))
-                    print(f"Combined pheromone at {position} with existing pheromone.")
                     return
                         
         # Add new pheromone if no merge
         new_pher = Pheromone(position, direction, pher_type)
         grid[cell].append(new_pher)
-        print(f"Created new pheromone: {new_pher}")
 
     def PheromoneDirection(self, position, range_offset, pher_type="food"):
         pher_directions = []

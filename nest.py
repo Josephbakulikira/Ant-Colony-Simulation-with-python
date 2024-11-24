@@ -9,13 +9,13 @@ text_color = (white)
 text_font = pygame.font.SysFont("Arial", 35)
 
 class Nest:
-    def __init__(self, position, n_ants=20):
+    def __init__(self, position, n_ants=ANT_COUNT):
         self.position = position
         self.n_ants = n_ants
         self.stock = 0
         self.ants = self.InitializeAnts()
-        self.radius = 45
-        self.color = blue
+        self.radius = NEST_RADIUS
+        self.color = NEST_COLOR
 
     def InitializeAnts(self):
         return [Ant(self.position, self) for _ in range(self.n_ants)]

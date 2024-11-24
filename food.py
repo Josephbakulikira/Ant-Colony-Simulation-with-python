@@ -10,9 +10,9 @@ text_color = (white)
 class Food:
     def __init__(self, position):
         self.position = position
-        self.stock = 25
-        self.bite_size = 1
-        self.color = (220, 130 , 30)
+        self.stock = FOOD_INITIAL_STOCK
+        self.bite_size = FOOD_BITE_SIZE
+        self.color = FOOD_COLOR
 
     def Bite(self):
         self.stock -= self.bite_size
@@ -21,7 +21,7 @@ class Food:
         if self.stock < 0:
             pass
             # self.position.x = randint(screen_offset, width-screen_offset)
-            # self.position.y = randint(screen_offset,height-screen_offset)
+            # self.position.y = randint(screen_offset, height-screen_offset)
             # self.stock = 25
 
     def Show(self, screen, show_remaining = True):
