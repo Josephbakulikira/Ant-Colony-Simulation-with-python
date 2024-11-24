@@ -1,5 +1,5 @@
 import pygame
-from parameters import *
+from config import *
 from random import randint
 from vector import Vector
 

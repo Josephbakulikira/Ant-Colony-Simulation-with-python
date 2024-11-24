@@ -1,7 +1,7 @@
 import random
 import pygame
 from vector import Vector
-from parameters import *
+from config import *
 from ant import Ant
 
 pygame.font.init()

@@ -1,5 +1,5 @@
 import pygame
-from parameters import *
+from config import *
 from vector import Vector
 from colony import Colony
 

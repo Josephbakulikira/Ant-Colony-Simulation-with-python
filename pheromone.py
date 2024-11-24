@@ -1,4 +1,4 @@
-from parameters import *
+from config import *
 import pygame
 from vector import Vector
 from math import ceil

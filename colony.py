@@ -1,4 +1,4 @@
-from parameters import *
+from config import *
 from vector import *
 from nest import *
 from pheromone import *
