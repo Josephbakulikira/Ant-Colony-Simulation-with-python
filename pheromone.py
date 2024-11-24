@@ -1,29 +1,30 @@
 import arcade
 from config import *
 from vector import Vector
+from sprite_base import VectorSprite
+import math
 
-class PheromoneParticle(arcade.SpriteCircle):
-    def __init__(self, position, direction, type="Food"):
+class PheromoneParticle(VectorSprite):
+    def __init__(self, position, direction, type="food"):
         color = arcade.color.GREEN if type == "food" else arcade.color.PURPLE
-        super().__init__(2, color, soft=True)
+        super().__init__()
         
-        self.vector_pos = position
-        self.center_x = position.x  # Set arcade sprite position
-        self.center_y = position.y
+        # Fix texture creation - remove 'soft' parameter
+        texture = arcade.make_circle_texture(4, color)
+        self.texture = texture
+        
+        # Set up hit box for circular shape
+        radius = 2  # Half of texture size
+        self.set_hit_box([(radius * math.cos(angle), radius * math.sin(angle)) 
+                         for angle in [0, math.pi/2, math.pi, 3*math.pi/2]])
+        
+        # Initialize other properties
+        self.position = position
         self.direction = direction
-        self.strength = PHEROMONE_INITIAL_STRENGTH
         self.type = type
-        
-    @property
-    def position(self):
-        return self.vector_pos
-        
-    @position.setter
-    def position(self, new_pos):
-        self.vector_pos = new_pos
-        self.center_x = new_pos.x
-        self.center_y = new_pos.y
-        
+        self.strength = PHEROMONE_INITIAL_STRENGTH
+        self.alpha = 255
+
     def update(self):
         rate = EVO_FOOD_RATE if self.type == "food" else EVO_HOME_RATE
         self.strength -= rate
@@ -31,36 +32,35 @@ class PheromoneParticle(arcade.SpriteCircle):
 
 class PheromoneSystem:
     def __init__(self):
-        self.food_particles = arcade.SpriteList(use_spatial_hash=True)
-        self.home_particles = arcade.SpriteList(use_spatial_hash=True)
-        self.grid_size = GRID_CELL_SIZE
-        self.grid = {}  # Spatial hash grid
+        self.particles = {"food": arcade.SpriteList(use_spatial_hash=True),
+                         "home": arcade.SpriteList(use_spatial_hash=True)}
+        self.grid = {}
+        self.grid_size = GRID_CELL_SIZE  # Add this initialization
         
+    def append_pheromone(self, position, direction, type="food"):
+        if self._should_merge(position, type):
+            return
+            
+        particle = PheromoneParticle(position, direction, type)
+        self.particles[type].append(particle)
+        self._add_to_grid(particle)
+        
+    def _should_merge(self, position, type):
+        grid_pos = self._get_grid_pos(position)
+        return any(Vector.GetDistance(position, p.position) < PHEROMONE_MERGE_DISTANCE 
+                  for p in self.grid.get(grid_pos, []))
+                  
     def _get_grid_pos(self, pos):
         return (int(pos.x / self.grid_size), int(pos.y / self.grid_size))
         
-    def append_pheromone(self, position, direction, pher_type="food"):
-        grid_pos = self._get_grid_pos(position)
-        if grid_pos in self.grid:
-            # Merge with existing pheromones if too close
-            for p in self.grid[grid_pos]:
-                if Vector.GetDistance(position, p.position) < PHEROMONE_MERGE_DISTANCE:
-                    p.strength = min(100, p.strength + 20)
-                    return
-                    
-        particle = PheromoneParticle(position, direction, pher_type)
+    def _add_to_grid(self, particle):
+        grid_pos = self._get_grid_pos(particle.position)
         if grid_pos not in self.grid:
             self.grid[grid_pos] = []
         self.grid[grid_pos].append(particle)
         
-        if pher_type == "food":
-            self.food_particles.append(particle)
-        else:
-            self.home_particles.append(particle)
-            
     def update(self):
-        # Update and remove dead particles
-        for particles in [self.food_particles, self.home_particles]:
+        for particles in self.particles.values():
             for p in particles:
                 p.update()
                 if p.strength <= 0:
@@ -68,17 +68,15 @@ class PheromoneSystem:
                     
     def draw(self, show_food=True, show_home=True):
         if show_food:
-            self.food_particles.draw()
+            self.particles["food"].draw()
         if show_home:
-            self.home_particles.draw()
+            self.particles["home"].draw()
             
     def PheromoneDirection(self, position, range_offset, pher_type="food"):
-        """Get average direction from nearby pheromones."""
         grid_pos = self._get_grid_pos(position)
         pher_directions = []
-        particles = self.food_particles if pher_type.lower() == "food" else self.home_particles
+        particles = self.particles[pher_type.lower()]
         
-        # Only check neighboring cells
         for dx in [-1, 0, 1]:
             for dy in [-1, 0, 1]:
                 check_pos = (grid_pos[0] + dx, grid_pos[1] + dy)

@@ -1,42 +1,46 @@
-import arcade
+from sprite_base import VectorSprite
+from vector import Vector  # Add this import
 from config import *
-from vector import Vector
+import arcade
 import math
 import random
 from arcade_utils import create_triangular_texture
 
-class AntSprite(arcade.Sprite):
+class AntSprite(VectorSprite):
     def __init__(self, position, nest):
         super().__init__()
         
         self.width = self.height = ANT_SIZE
         self._create_ant_texture()
-        
-        self.vector_pos = position
-        self.position = position  # This will set both center_x and center_y
+        self.position = position
         
         self.velocity = Vector()
         self.max_speed = 3
+        self.scavenger = Scavenger()  # Add scavenger initialization
+        self._setup_sensors()
+        self.nest = nest
+        self.has_food = False
+        self.isFollowingTrail = False  # Add this back
+        
+    def _setup_sensors(self):
         self.trigger_radius = 10
         self.smell_radius = 30
         self._cached_smell_radius_sq = self.smell_radius ** 2
         self._cached_trigger_radius_sq = self.trigger_radius ** 2
         
-        self.scavenger = Scavenger()
-        self.nest = nest
-        self.has_food = False
-        self.isFollowingTrail = False
-        self.angle = -self.velocity.Heading()
+    def update(self, foods, pheromones, delta_time):
+        self._update_movement(foods, pheromones)
+        self._update_position()
         
-    @property
-    def position(self):
-        return self.vector_pos
-        
-    @position.setter
-    def position(self, new_pos):
-        self.vector_pos = new_pos
-        self.center_x = new_pos.x
-        self.center_y = new_pos.y
+    def _update_movement(self, foods, pheromones):
+        if self.has_food:
+            self._return_to_nest(pheromones)
+        else:
+            self._search_for_food(foods.GetClosestFood(self.position), pheromones)
+            
+    def _update_position(self):
+        self.position = self.position + self.velocity.Scale(self.max_speed)
+        self.angle = math.degrees(self.velocity.Heading())
         
     def _create_ant_texture(self):
         texture_size = max(self.width, self.height)
@@ -46,21 +50,9 @@ class AntSprite(arcade.Sprite):
                          (0, self.height/2),
                          (self.width/2, -self.height/2)])
         
-    def update(self, foods, pheromones, delta_time):
-        closest_food = foods.GetClosestFood(self.position)
-        self.UpdateVelocity(closest_food, pheromones)
-        self.velocity = self.velocity.Scale(self.max_speed)
-        
-        # Update both vector and sprite positions
-        self.vector_pos = self.vector_pos + self.velocity
-        self.center_x = self.vector_pos.x
-        self.center_y = self.vector_pos.y
-        self.angle = math.degrees(self.velocity.Heading())
-        
-    def ReturnToNest(self, pheromone):
+    def _return_to_nest(self, pheromone):
         nest_pos = self.nest.position
         if not isinstance(nest_pos, Vector):
-            # Convert tuple to Vector if needed
             nest_pos = Vector(nest_pos[0], nest_pos[1])
             
         if Vector.WithinRange(self.position, nest_pos, self.nest.radius):
@@ -75,36 +67,30 @@ class AntSprite(arcade.Sprite):
         pher_direction = self.velocity.Negate()
         pheromone.append_pheromone(self.position, pher_direction, "food")
 
-    def SearchForFood(self, closest_food, pheromone):
+    def _search_for_food(self, closest_food, pheromone):
         if not closest_food:
-            self.FollowPheromoneOrWander(pheromone)
+            self._follow_pheromone_or_wander(pheromone)
             return
             
         dist_sq = Vector.GetDistanceSQ(self.position, closest_food.position)
         if dist_sq < self._cached_trigger_radius_sq:
-            self.TakeFood(closest_food)
+            self._take_food(closest_food)
         elif dist_sq < self._cached_smell_radius_sq:
-            self.Step(closest_food, pheromone)
+            self._step(closest_food, pheromone)
         else:
-            self.FollowPheromoneOrWander(pheromone)
+            self._follow_pheromone_or_wander(pheromone)
         pheromone.append_pheromone(self.position, self.velocity, "home")
 
-    def UpdateVelocity(self, closest_food, pheromone):
-        if self.has_food == True:
-            self.ReturnToNest(pheromone)
-        else:
-            self.SearchForFood(closest_food, pheromone)
-
-    def TakeFood(self, closest_food):
+    def _take_food(self, closest_food):
         self.has_food = True
         self.isFollowingTrail = False
         self.color = FOOD_COLOR
         closest_food.Bite()
 
-    def Step(self, closest_food, pheromone):
+    def _step(self, closest_food, pheromone):
         self.velocity += self.scavenger.Seek(self.position, closest_food.position, self.velocity, self.max_speed)
 
-    def FollowPheromoneOrWander(self, pheromone):
+    def _follow_pheromone_or_wander(self, pheromone):
         pheromone_direction = pheromone.PheromoneDirection(self.position, self.smell_radius, "food")
         pheromone_direction = pheromone_direction.Scale(self.max_speed)
         self.velocity = pheromone_direction
