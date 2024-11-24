@@ -19,6 +19,8 @@ FOOD_INITIAL_STOCK = 25
 FOOD_BITE_SIZE = 1
 
 # Colors
-NEST_COLOR = arcade.color.BLUE
-FOOD_COLOR = arcade.color.ORANGE
-ANT_COLOR = arcade.color.WHITE
+NEST_COLOR = arcade.color.DARK_BLUE
+FOOD_COLOR = arcade.color.GOLD
+ANT_COLOR = arcade.color.LIGHT_GRAY
+PHEROMONE_FOOD_COLOR = arcade.color.LIGHT_GREEN
+PHEROMONE_HOME_COLOR = arcade.color.LIGHT_BLUE

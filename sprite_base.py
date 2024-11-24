@@ -30,6 +30,7 @@ class VectorSprite(arcade.Sprite):
         draw = PIL.ImageDraw.Draw(image)
         points = [(size/2, 0), (0, size), (size, size)]
         draw.polygon(points, fill=rgba_color)
+        image = image.resize((int(size * 2), int(size * 2)), PIL.Image.ANTIALIAS)  # Anti-aliasing
         return arcade.Texture(f"triangle_{size}", image)
 
     @staticmethod
@@ -37,4 +38,5 @@ class VectorSprite(arcade.Sprite):
         image = PIL.Image.new('RGBA', (int(size), int(size)), (0, 0, 0, 0))
         draw = PIL.ImageDraw.Draw(image)
         draw.ellipse([0, 0, size, size], fill=color)
+        image = image.resize((int(size * 2), int(size * 2)), PIL.Image.ANTIALIAS)  # Anti-aliasing
         return arcade.Texture(f"circle_{size}", image)

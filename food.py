@@ -27,8 +27,6 @@ class FoodSprite(arcade.Sprite):
         self.stock -= self.bite_size
         self._create_food_texture()  # Update size
         
-    # Remove GetPosition method since we now use position property
-        
     def draw(self):
         if self.stock > 0:
             super().draw()

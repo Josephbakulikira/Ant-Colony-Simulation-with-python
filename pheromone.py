@@ -6,7 +6,7 @@ import math
 
 class PheromoneParticle(VectorSprite):
     def __init__(self, position, direction, type="food"):
-        color = arcade.color.GREEN if type == "food" else arcade.color.PURPLE
+        color = PHEROMONE_FOOD_COLOR if type == "food" else PHEROMONE_HOME_COLOR
         super().__init__()
         
         # Fix texture creation - remove 'soft' parameter
@@ -67,10 +67,10 @@ class PheromoneSystem:
                     p.remove_from_sprite_lists()
                     
     def draw(self, show_food=True, show_home=True):
-        if show_food:
-            self.particles["food"].draw()
         if show_home:
             self.particles["home"].draw()
+        if show_food:
+            self.particles["food"].draw()
             
     def PheromoneDirection(self, position, range_offset, pher_type="food"):
         grid_pos = self._get_grid_pos(position)

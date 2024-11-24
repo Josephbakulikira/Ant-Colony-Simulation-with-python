@@ -3,6 +3,7 @@ from functools import lru_cache
 import numpy as np
 from math import atan2, cos, sin, sqrt, pi
 from random import uniform
+import arcade
 
 class Vector:
     def __init__(self, x=0, y=0):
