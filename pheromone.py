@@ -7,10 +7,8 @@ class PheromoneParticle(arcade.SpriteCircle):
         color = arcade.color.GREEN if type == "food" else arcade.color.PURPLE
         super().__init__(2, color, soft=True)
         
-        # Store vector position separately
-        self.vector_pos = position  # Keep Vector for calculations
-        # Set arcade sprite position using components
-        self.center_x = position.x
+        self.vector_pos = position
+        self.center_x = position.x  # Set arcade sprite position
         self.center_y = position.y
         self.direction = direction
         self.strength = PHEROMONE_INITIAL_STRENGTH
@@ -19,6 +17,12 @@ class PheromoneParticle(arcade.SpriteCircle):
     @property
     def position(self):
         return self.vector_pos
+        
+    @position.setter
+    def position(self, new_pos):
+        self.vector_pos = new_pos
+        self.center_x = new_pos.x
+        self.center_y = new_pos.y
         
     def update(self):
         rate = EVO_FOOD_RATE if self.type == "food" else EVO_HOME_RATE

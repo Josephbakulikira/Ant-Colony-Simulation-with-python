@@ -9,31 +9,24 @@ class AntSprite(arcade.Sprite):
     def __init__(self, position, nest):
         super().__init__()
         
-        # Create ant texture as a triangle shape instead of text
-        self.width = ANT_SIZE
-        self.height = ANT_SIZE
+        self.width = self.height = ANT_SIZE
         self._create_ant_texture()
         
-        self.vector_pos = position  # Keep Vector for calculations
-        self.center_x = position.x  # Set arcade sprite position
-        self.center_y = position.y
+        self.vector_pos = position
+        self.position = position  # This will set both center_x and center_y
         
         self.velocity = Vector()
         self.max_speed = 3
         self.trigger_radius = 10
         self.smell_radius = 30
-        self.scavenger = Scavenger()
-        self.nest = nest
-        self.angle = -self.velocity.Heading()
-        self.has_food = False
-        self.isFollowingTrail = False
-        
-        # Position sprite
-        self.center_x = position.x
-        self.center_y = position.y
-        
         self._cached_smell_radius_sq = self.smell_radius ** 2
         self._cached_trigger_radius_sq = self.trigger_radius ** 2
+        
+        self.scavenger = Scavenger()
+        self.nest = nest
+        self.has_food = False
+        self.isFollowingTrail = False
+        self.angle = -self.velocity.Heading()
         
     @property
     def position(self):

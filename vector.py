@@ -31,21 +31,14 @@ class Vector:
             return Vector(*(self.vec + other.vec))
         return Vector(*(self.vec + other))
         
-    def __sub__(a, b):
-        if type(b) == Vector:
-            return Vector(a.x - b.x, a.y - b.y)
-        else:
-            return Vector(a.x - b, a.y - b)
-    def __mul__(a, b):
-        if type(b) == Vector:
-            return Vector(a.x * b.x, a.y * b.y)
-        else:
-            return Vector(a.x * b, a.y * b)
-    def __truediv__(a, b):
-        if type(b) == Vector:
-            return Vector(a.x / b.x, a.y / b.y)
-        else:
-            return Vector(a.x / b, a.y / b)
+    def __sub__(self, other):
+        return Vector(*(self.vec - (other.vec if isinstance(other, Vector) else other)))
+        
+    def __mul__(self, other):
+        return Vector(*(self.vec * (other.vec if isinstance(other, Vector) else other)))
+        
+    def __truediv__(self, other):
+        return Vector(*(self.vec / (other.vec if isinstance(other, Vector) else other)))
 
     def Random(value=1):
         return Vector(uniform(-value, value), uniform(-value, value))
