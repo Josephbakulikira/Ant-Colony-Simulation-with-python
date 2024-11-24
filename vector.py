@@ -1,15 +1,34 @@
-from math import atan2, sin, cos, sqrt, pi, pow
+import numpy as np
+from math import atan2, cos, sin, sqrt, pi
 from random import uniform
 
 class Vector:
     def __init__(self, x=0, y=0):
-        self.x = x
-        self.y = y
-    def __add__(a, b):
-        if type(b) == Vector:
-            return Vector(a.x + b.x, a.y + b.y)
-        else:
-            return Vector(a.x + b, a.y + b)
+        self.vec = np.array([float(x), float(y)])
+        self._magnitude = None  # Cache magnitude
+        self._heading = None    # Cache heading
+    
+    @property 
+    def x(self): return self.vec[0]
+    
+    @property
+    def y(self): return self.vec[1]
+    
+    @x.setter
+    def x(self, value):
+        self.vec[0] = float(value)
+        self._reset_cache()
+        
+    @y.setter
+    def y(self, value):
+        self.vec[1] = float(value)
+        self._reset_cache()
+    
+    def __add__(self, other):
+        if isinstance(other, Vector):
+            return Vector(*(self.vec + other.vec))
+        return Vector(*(self.vec + other))
+        
     def __sub__(a, b):
         if type(b) == Vector:
             return Vector(a.x - b.x, a.y - b.y)
@@ -37,11 +56,15 @@ class Vector:
         return Vector(x, y)
 
     def Magnitude(self):
-        return sqrt(self.x * self.x + self.y * self.y)
+        if self._magnitude is None:
+            self._magnitude = np.linalg.norm(self.vec)
+        return self._magnitude
+        
     def Normalize(self):
-        magnitude = self.Magnitude()
-        if magnitude > 0:
-            return Vector(self.x / magnitude, self.y / magnitude)
+        mag = self.Magnitude()
+        if mag > 0:
+            return Vector(*(self.vec / mag))
+            
     def Heading(self, toDegree=False):
         theta = atan2(self.y, self.x)
         if toDegree:
@@ -69,11 +92,8 @@ class Vector:
         mag = self.Magnitude()
         if mag == 0:
             return Vector()
-        else:
-            scaler = l/mag
-            return Vector(self.x * scaler, self.y * scaler)
-        scaler = 0 if mag == 0 else l/mag
-        return self * scaler
+        return Vector(*(self.vec * (l/mag)))
+        
     def Average(vecs):
         if len(vecs) == 0:
             return Vector()
@@ -95,3 +115,8 @@ class Vector:
     def __repr__(self):
         # DEBUG
         return f" ({self.x}, {self.y})"
+        
+    # Reset cache when vector changes
+    def _reset_cache(self):
+        self._magnitude = None
+        self._heading = None

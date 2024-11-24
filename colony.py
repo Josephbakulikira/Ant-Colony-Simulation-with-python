@@ -10,8 +10,7 @@ class Colony:
         self.food = FoodMap(food_stock_count)
         self.pheromone = PheromoneMap()
 
-    def Update(self, screen, showFoodTrail, showHomeTrail, delta_time):
-        
+    def Update(self, screen, showFoodTrail, showHomeTrail, delta_time, view_rect=None):
         self.nest.Update(self.food, self.pheromone, delta_time)
         self.food.Update()
         self.pheromone.Update(screen, showFoodTrail, showHomeTrail)

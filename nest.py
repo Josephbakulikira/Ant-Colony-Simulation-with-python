@@ -22,16 +22,18 @@ class Nest:
 
     def Update(self, foods, pheromones, dt):
         for ant in self.ants:
-            # boundary
             ant.Update(foods, pheromones, dt)
-            if ant.position.x < 0:
-                ant.position.x = width
-            elif ant.position.x > width:
-                ant.position.x = 0
-            if ant.position.y < 0:
-                ant.position.y = height
-            elif ant.position.y > height:
-                ant.position.y = 0
+            # boundary wrapping
+            pos = ant.position
+            if pos.x < 0:
+                ant.position = Vector(width, pos.y)
+            elif pos.x > width:
+                ant.position = Vector(0, pos.y)
+            if pos.y < 0:
+                ant.position = Vector(pos.x, height)
+            elif pos.y > height:
+                ant.position = Vector(pos.x, 0)
+
     def Show(self, screen, show_stock=True):
         pygame.draw.circle(screen, self.color, self.position.xy(), self.radius)
 
