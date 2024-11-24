@@ -1,45 +1,53 @@
-import random
-import pygame
+import arcade
 from vector import Vector
 from config import *
-from ant import Ant
+from ant import AntSprite
 
-pygame.font.init()
-text_color = WHITE
-text_font = pygame.font.SysFont("Arial", 35)
-
-class Nest:
+class NestSprite(arcade.SpriteSolidColor):
     def __init__(self, position, n_ants=ANT_COUNT):
-        self.position = position
+        super().__init__(NEST_RADIUS * 2, NEST_RADIUS * 2, NEST_COLOR)
+        
+        self.vector_pos = position
+        self.center_x = position.x
+        self.center_y = position.y
         self.n_ants = n_ants
-        self.stock = 0
-        self.ants = self.InitializeAnts()
         self.radius = NEST_RADIUS
-        self.color = NEST_COLOR
-
+        self.stock = 0
+        self.ants = arcade.SpriteList()
+        self.InitializeAnts()
+        
+    @property
+    def position(self):
+        return self.vector_pos
+        
     def InitializeAnts(self):
-        return [Ant(self.position, self) for _ in range(self.n_ants)]
-
+        ants = [AntSprite(self.vector_pos, self) for _ in range(self.n_ants)]
+        for ant in ants:
+            self.ants.append(ant)
+    
     def Update(self, foods, pheromones, dt):
         for ant in self.ants:
-            ant.Update(foods, pheromones, dt)
+            ant.update(foods, pheromones, dt)
             # boundary wrapping
             pos = ant.position
             if pos.x < 0:
-                ant.position = Vector(WIDTH, pos.y)  # Changed 'width' to 'WIDTH'
+                ant.position = Vector(WIDTH, pos.y)
             elif pos.x > WIDTH:
                 ant.position = Vector(0, pos.y)
             if pos.y < 0:
-                ant.position = Vector(pos.x, HEIGHT)  # Changed 'height' to 'HEIGHT'
+                ant.position = Vector(pos.x, HEIGHT)
             elif pos.y > HEIGHT:
                 ant.position = Vector(pos.x, 0)
-
-    def Show(self, screen, show_stock=True):
-        pygame.draw.circle(screen, self.color, self.position.xy(), self.radius)
-
-        if show_stock:
-            text_surface = text_font.render(str(self.stock), True, text_color)
-            text_rectangle = text_surface.get_rect(center=self.position.xy())
-            screen.blit(text_surface, text_rectangle)
-        for ant in self.ants:
-            ant.Show(screen)
+        
+    def draw(self):
+        super().draw()
+        # Draw stock count
+        arcade.draw_text(
+            str(self.stock),
+            self.center_x,
+            self.center_y,
+            arcade.color.WHITE,
+            35,
+            anchor_x="center",
+            anchor_y="center"
+        )

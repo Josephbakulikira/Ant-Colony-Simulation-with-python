@@ -1,59 +1,43 @@
-import pygame
+import arcade
 from config import *
-from vector import Vector
 from colony import Colony
 
+class AntColonyWindow(arcade.Window):
+    def __init__(self):
+        super().__init__(WIDTH, HEIGHT, "Ant Colony Simulation")
+        
+        arcade.set_background_color(arcade.color.BLACK)
+        self.colony = None
+        self.show_pheromone_food = True
+        self.show_pheromone_home = True
+        self.paused = False
+        
+    def setup(self):
+        self.colony = Colony()
+        
+    def on_draw(self):
+        self.clear()
+        if self.colony:
+            self.colony.draw()
+            
+    def on_update(self, delta_time):
+        if not self.paused and self.colony:
+            self.colony.update(delta_time, self.show_pheromone_food, self.show_pheromone_home)
+            
+    def on_key_press(self, key, modifiers):
+        if key == arcade.key.ESCAPE:
+            arcade.close_window()
+        elif key == arcade.key.F:
+            self.show_pheromone_food = not self.show_pheromone_food
+        elif key == arcade.key.H:
+            self.show_pheromone_home = not self.show_pheromone_home
+        elif key == arcade.key.SPACE:
+            self.paused = not self.paused
+
 def main():
-    pygame.display.init()
-    screen = pygame.display.set_mode(RESOLUTION)
-    clock = pygame.time.Clock()
-    fps = 30
-    
-    # Pre-create surfaces
-    pheromone_layer = pygame.Surface(RESOLUTION, pygame.SRCALPHA, 32)  # Ensure 32-bit for alpha
-    background = pygame.Surface(RESOLUTION)
-    
-    colony = Colony()
-    show_pheromone_food = True
-    show_pheromone_home = True
-    pause = False
-    
-    # Visible area tracking
-    view_rect = pygame.Rect(0, 0, WIDTH, HEIGHT)
-    
-    running = True
-    while running:
-        if not pause:
-            # Clear only changed areas
-            dirty_rects = []
-            
-        delta_time = clock.tick(fps)
-        pygame.display.set_caption(f"Ant Colony Simulation - FPS: {int(clock.get_fps())}")
-
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
-                running = False
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_f:
-                    show_pheromone_food = not show_pheromone_food
-                if event.key == pygame.K_h:
-                    show_pheromone_home = not show_pheromone_home
-                if event.key == pygame.K_SPACE:
-                    pause = not pause
-
-        if not pause:
-            # Clear layers
-            background.fill(BLACK)  # Changed from black to BLACK
-            # pheromone_layer.fill((0,0,0,0))  # Ensure this line remains commented out
-            
-            colony.Update(pheromone_layer, show_pheromone_food, show_pheromone_home, delta_time)
-            
-            # Composite layers
-            screen.blit(background, (0,0))
-            screen.blit(pheromone_layer, (0,0), special_flags=pygame.BLEND_ADD)  # Ensure additive blending
-            colony.Show(screen)
-            
-            pygame.display.flip()
+    window = AntColonyWindow()
+    window.setup()
+    arcade.run()
 
 if __name__ == "__main__":
     main()

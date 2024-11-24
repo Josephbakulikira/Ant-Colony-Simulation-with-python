@@ -1,3 +1,5 @@
+import arcade.color
+
 WIDTH = 800
 HEIGHT = 800
 RESOLUTION = (WIDTH, HEIGHT)
@@ -10,12 +12,12 @@ FOOD_STOCK_COUNT = 3
 EVO_HOME_RATE = 0.05  # Reduced from 0.8
 EVO_FOOD_RATE = 0.02  # Reduced from 0.1
 
-WHITE = (255, 255, 255)
-BLACK = (0, 0, 0)
-RED = (255, 0, 0)
-BLUE = (0, 0, 255)
-GREEN = (0, 255, 0)
-YELLOW = (255, 255, 0)
+WHITE = arcade.color.WHITE
+BLACK = arcade.color.BLACK
+RED = arcade.color.RED
+BLUE = arcade.color.BLUE
+GREEN = arcade.color.GREEN
+YELLOW = arcade.color.YELLOW
 
 ANT_SIZE = 10
 
@@ -30,14 +32,14 @@ USE_SPATIAL_HASH = True
 BATCH_RENDER = True
 
 PHEROMONE_INITIAL_STRENGTH = 100
-ANT_COLOR = (255, 255, 255)
+ANT_COLOR = arcade.color.WHITE
 
 # New constants
 NEST_RADIUS = 45
-NEST_COLOR = BLUE
+NEST_COLOR = arcade.color.BLUE
 
 FOOD_INITIAL_STOCK = 25
-FOOD_COLOR = (220, 130, 30)
+FOOD_COLOR = arcade.color.ORANGE  # Updated to use arcade color
 FOOD_BITE_SIZE = 1
 
 # Remove or comment out the lowercase constants

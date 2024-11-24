@@ -1,65 +1,82 @@
-import pygame
+import arcade
 from config import *
 from random import randint
 from vector import Vector
 
-screen_offset = 30
-pygame.font.init()
-text_color = WHITE
-
-class Food:
+class FoodSprite(arcade.Sprite):
     def __init__(self, position):
-        self.position = position
+        super().__init__()
+        self.vector_pos = position  # Store Vector for calculations
+        self.center_x = position.x  # Use x,y components for arcade sprite
+        self.center_y = position.y
         self.stock = FOOD_INITIAL_STOCK
         self.bite_size = FOOD_BITE_SIZE
         self.color = FOOD_COLOR
-
+        self._create_food_texture()
+        
+    @property
+    def position(self):
+        return self.vector_pos
+        
+    def _create_food_texture(self):
+        size = self.stock + 5
+        texture = arcade.make_circle_texture(size, self.color)
+        self.texture = texture
+        
     def Bite(self):
         self.stock -= self.bite_size
+        self._create_food_texture()  # Update size
+        
+    # Remove GetPosition method since we now use position property
+        
+    def draw(self):
+        if self.stock > 0:
+            super().draw()
+            arcade.draw_text(
+                str(self.stock),
+                self.center_x,
+                self.center_y,
+                arcade.color.WHITE,
+                12,
+                anchor_x="center",
+                anchor_y="center"
+            )
 
-    def Update(self):
-        if self.stock < 0:
-            pass
-            # self.position.x = randint(screen_offset, width-screen_offset)
-            # self.position.y = randint(screen_offset, height-screen_offset)
-            # self.stock = 25
-
-    def Show(self, screen, show_remaining = True):
-        if self.stock > 0 :
-            pygame.draw.circle(screen, self.color, self.position.xy(), self.stock + 5 )
-
-        if show_remaining:
-            text_font = pygame.font.SysFont("Arial", self.stock)
-            text_surface = text_font.render(str(self.stock), True, text_color)
-            text_rectangle = text_surface.get_rect(center=self.position.xy())
-            screen.blit(text_surface, text_rectangle)
 class FoodMap:
     def __init__(self, food_stock):
         self.size = food_stock
-        self.foods = self.InitializeFood()
+        self.foods = arcade.SpriteList()
+        self.InitializeFood()
 
     def InitializeFood(self):
-        return [ Food(Vector(randint(screen_offset, WIDTH - screen_offset), randint(screen_offset, HEIGHT - screen_offset))) for _ in range(self.size)]
+        screen_offset = 30
+        for _ in range(self.size):
+            pos = Vector(
+                randint(screen_offset, WIDTH - screen_offset),
+                randint(screen_offset, HEIGHT - screen_offset)
+            )
+            food = FoodSprite(pos)
+            self.foods.append(food)
 
     def Update(self):
-        for f in self.foods:
-            f.Update()
-            if f.stock <= 0:
-                self.foods.remove(f)
+        for food in self.foods[:]:  # Create a copy of list for safe iteration
+            if food.stock <= 0:
+                food.remove_from_sprite_lists()
 
     def GetClosestFood(self, position):
+        if not self.foods:  # Handle empty food list
+            return None
+            
         closest_food = self.foods[0]
         closest_distance = Vector.GetDistanceSQ(position, closest_food.position)
-        temp_distance = closest_distance
-
-        for x in range(1, len(self.foods)):
-            temp_distance = Vector.GetDistanceSQ(position, self.foods[x].position)
+        
+        for food in self.foods[1:]:
+            temp_distance = Vector.GetDistanceSQ(position, food.position)
             if temp_distance < closest_distance:
-                closest_food = self.foods[x]
+                closest_food = food
                 closest_distance = temp_distance
-
+                
         return closest_food
 
-    def Show(self, screen):
-        for food in self.foods:
-            food.Show(screen)
+    def draw(self):
+        self.foods.draw()
