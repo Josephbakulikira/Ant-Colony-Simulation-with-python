@@ -1,50 +1,43 @@
-import pygame
-from parameters import *
-from vector import Vector
+import arcade
+from config import *
 from colony import Colony
 
-# Initialize pygame
-pygame.display.init()
-screen = pygame.display.set_mode(resolution)
-clock = pygame.time.Clock()
-fps = 30
+class AntColonyWindow(arcade.Window):
+    def __init__(self):
+        super().__init__(WIDTH, HEIGHT, "Ant Colony Simulation")
+        
+        arcade.set_background_color(arcade.color.BLACK)
+        self.colony = None
+        self.show_pheromone_food = True
+        self.show_pheromone_home = True
+        self.paused = False
+        
+    def setup(self):
+        self.colony = Colony()
+        
+    def on_draw(self):
+        self.clear()
+        if self.colony:
+            self.colony.draw()
+            
+    def on_update(self, delta_time):
+        if not self.paused and self.colony:
+            self.colony.update(delta_time, self.show_pheromone_food, self.show_pheromone_home)
+            
+    def on_key_press(self, key, modifiers):
+        if key == arcade.key.ESCAPE:
+            arcade.close_window()
+        elif key == arcade.key.F:
+            self.show_pheromone_food = not self.show_pheromone_food
+        elif key == arcade.key.H:
+            self.show_pheromone_home = not self.show_pheromone_home
+        elif key == arcade.key.SPACE:
+            self.paused = not self.paused
 
-# initialize colony
-colony = Colony()
+def main():
+    window = AntColonyWindow()
+    window.setup()
+    arcade.run()
 
-# toggles
-show_pheromone_food = True
-show_pheromone_home = True
-
-pause = False
-
-run = True
-while run:
-    if not pause:
-        screen.fill(black)
-    delta_time = clock.tick(fps)
-    # update caption
-    frame_rate = int(clock.get_fps())
-    pygame.display.set_caption("Ant Colony Simulation - FPS : ( {} )".format(frame_rate))
-
-    # Handle events
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            run = False
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_ESCAPE:
-                run = False
-            if event.key == pygame.K_f:
-                show_pheromone_food = not show_pheromone_food
-            if event.key == pygame.K_h:
-                show_pheromone_home = not show_pheromone_home
-            if event.key == pygame.K_SPACE:
-                pause = not pause
-
-    if not pause:
-        colony.Update(screen, showFoodTrail=show_pheromone_food, showHomeTrail=show_pheromone_home, delta_time=delta_time)
-        colony.Show(screen)
-
-        pygame.display.flip()
-
-pygame.quit()
+if __name__ == "__main__":
+    main()

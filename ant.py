@@ -1,102 +1,116 @@
-import pygame
-from parameters import *
-from vector import Vector
-from math import pi, degrees, radians
+import math
 import random
 
-class Ant:
-    def __init__(self, position=Vector(), nest=None):
+from config import *
+from sprite_base import VectorSprite
+from vector import Vector  # Add this import
+
+
+class AntSprite(VectorSprite):
+    def __init__(self, position, nest):
+        super().__init__()
+        
+        self.has_food = False  # Move this up before using it
+        self.width = self.height = ANT_SIZE * 1.5  # Reduced multiplier from 2 to 1.5
+        self.color = FOOD_COLOR if self.has_food else ANT_COLOR
+        self.alpha = 255  # Ensure full opacity
+        self._create_ant_texture()
         self.position = position
-        self.velocity = Vector()
+        
+        self.velocity = Vector.Random()  # Start with random direction
         self.max_speed = 3
+        self.scavenger = Scavenger()  # Add scavenger initialization
+        self._setup_sensors()
+        self.nest = nest
+        self.isFollowingTrail = False  # Add this back
+        self.initial_spread = True  # Add flag for initial movement
+        
+    def _setup_sensors(self):
         self.trigger_radius = 10
         self.smell_radius = 30
-        self.scavenger = Scavenger()
-        self.nest = nest
-        # angle in radiant
-        self.angle = -self.velocity.Heading()
-        self.color = white
-        self.has_food = False
-        self.isFollowingTrail = False
-
-    def ReturnToNest(self, pheromone):
-        if Vector.WithinRange(self.position, self.nest.position, self.nest.radius):
+        self._cached_smell_radius_sq = self.smell_radius ** 2
+        self._cached_trigger_radius_sq = self.trigger_radius ** 2
+        
+    def update(self, foods, pheromones, delta_time):
+        self._update_movement(foods, pheromones)
+        self._update_position()
+        
+    def _update_movement(self, foods, pheromones):
+        if self.has_food:
+            self._return_to_nest(pheromones)
+        else:
+            self._search_for_food(foods.GetClosestFood(self.position), pheromones)
+        # Deposit pheromones every time
+        pheromone_type = 'food' if self.has_food else 'home'
+        pheromones.append_pheromone(self.position, self.velocity, pheromone_type)
+            
+    def _update_position(self):
+        self.position = self.position + self.velocity.Scale(self.max_speed)
+        self.angle = math.degrees(self.velocity.Heading())
+        
+    def _create_ant_texture(self):
+        texture_size = max(self.width, self.height)
+        self.texture = self.create_triangular_texture(texture_size, self.color)
+        # Make hitbox slightly smaller than visual size
+        hitbox_size = texture_size * 0.8
+        self.set_hit_box([
+            (-hitbox_size/2, -hitbox_size/2),
+            (0, hitbox_size/2),
+            (hitbox_size/2, -hitbox_size/2)
+        ])
+        
+    def _return_to_nest(self, pheromone):
+        nest_pos = self.nest.position
+        if not isinstance(nest_pos, Vector):
+            nest_pos = Vector(nest_pos[0], nest_pos[1])
+            
+        if Vector.WithinRange(self.position, nest_pos, self.nest.radius):
             self.has_food = False
             self.nest.stock += 1
-            self.color = white
-            # self.angle = -self.velocity.Heading()
+            self.color = ANT_COLOR
             return
-        self.velocity += self.scavenger.Seek(self.position, self.nest.position, self.velocity, self.max_speed)
-        # add some randomness to have some more realistic movement
+            
+        self.velocity += self.scavenger.Seek(self.position, nest_pos, self.velocity, self.max_speed)
         wander_force = self.scavenger.Wander(self.velocity)
         self.velocity += (wander_force * 0.5)
         pher_direction = self.velocity.Negate()
+        pheromone.append_pheromone(self.position, pher_direction, "food")
 
-        pheromone.AppendPheromone(self.position, pher_direction ,"food")
-
-    def SearchForFood(self, closest_food, pheromone):
-        dist = Vector.GetDistance(self.position, closest_food.position)
-
-        if dist < self.trigger_radius:
-            self.TakeFood(closest_food)
-        elif dist < self.smell_radius:
-            self.Step(closest_food, pheromone)
+    def _search_for_food(self, closest_food, pheromone):
+        if not closest_food:
+            self._follow_pheromone_or_wander(pheromone)
+            return
+            
+        dist_sq = Vector.GetDistanceSQ(self.position, closest_food.position)
+        if dist_sq < self._cached_trigger_radius_sq:
+            self._take_food(closest_food)
+        elif dist_sq < self._cached_smell_radius_sq:
+            self._step(closest_food, pheromone)
         else:
-            self.FollowPheromoneOrWander(pheromone)
+            self._follow_pheromone_or_wander(pheromone)
+        pheromone.append_pheromone(self.position, self.velocity, "home")
 
-        pheromone.AppendPheromone(self.position, self.velocity, "home")
-
-    def UpdateVelocity(self, closest_food, pheromone):
-        if self.has_food == True:
-            self.ReturnToNest(pheromone)
-        else:
-            self.SearchForFood(closest_food, pheromone)
-
-
-    def TakeFood(self, closest_food):
+    def _take_food(self, closest_food):
         self.has_food = True
         self.isFollowingTrail = False
-        self.color = (220, 130 , 30)
+        self.color = FOOD_COLOR
         closest_food.Bite()
 
-    def Step(self, closest_food, pheromone):
+    def _step(self, closest_food, pheromone):
         self.velocity += self.scavenger.Seek(self.position, closest_food.position, self.velocity, self.max_speed)
 
-    def FollowPheromoneOrWander(self, pheromone):
+    def _follow_pheromone_or_wander(self, pheromone):
         pheromone_direction = pheromone.PheromoneDirection(self.position, self.smell_radius, "food")
         pheromone_direction = pheromone_direction.Scale(self.max_speed)
         self.velocity = pheromone_direction
         self.velocity += self.scavenger.Wander(self.velocity)
-        # pheromone.AppendPheromone(self.position, self.velocity, "home")
-
-    def Update(self, foods, pheromones, dt):
-        closest_food = foods.GetClosestFood(self.position)
-        self.UpdateVelocity(closest_food, pheromones)
-        self.velocity = self.velocity.Scale(self.max_speed)
-        # self.position += self.velocity.Normalize()  * dt * self.max_speed
-        self.position += self.velocity
-        self.angle = self.velocity.Heading()
-
-
-    def Show(self, screen):
-        # initialize triangle point
-        # rotate point based on the angle
-        triangle = [
-            ( self.position + Vector(ant_size//2, 0).Rotate(self.angle) ).xy(),
-            ( self.position - Vector(ant_size//2, - ant_size/3).Rotate(self.angle) ).xy(),
-            ( self.position - Vector(ant_size//2, + ant_size/3).Rotate(self.angle) ).xy()
-        ]
-        if self.has_food:
-            pygame.draw.circle(screen, (220, 130 , 30), (self.position + Vector(ant_size/1.5, 0).Rotate(self.angle)).xy(), 2 )
-
-        pygame.draw.polygon(screen, self.color, triangle)
 
 class Scavenger:
     def __init__(self):
-        self.wander_distance = 20
-        self.wander_radius = 10
-        self.wander_angle = 1
-        self.wander_delta_angle = pi/4
+        self.wander_distance = WANDER_DISTANCE
+        self.wander_radius = WANDER_RADIUS
+        self.wander_angle = WANDER_ANGLE
+        self.wander_delta_angle = WANDER_DELTA_ANGLE
 
     def Seek(self, position, target, velocity, max_speed):
         diff = target - position
